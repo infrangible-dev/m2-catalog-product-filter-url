@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Infrangible\CatalogProductFilterUrl\Helper;
 
 use Infrangible\Core\Helper\Attribute;
+use Magento\Catalog\Api\Data\EavAttributeInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\App\Request\Http;
 
@@ -71,7 +72,11 @@ class Data
         try {
             $attribute = $this->attributeHelper->getAttribute(Product::ENTITY, $code);
 
-            return (bool)$attribute->getId();
+            if ($attribute instanceof EavAttributeInterface &&
+                ($attribute->getIsFilterable() == 1 || $attribute->getIsFilterable() == 2)) {
+
+                return true;
+            }
         } catch (\Exception $exception) {
             // fall-through
         }
