@@ -13,15 +13,10 @@ use Magento\Framework\Config\ConverterInterface;
  * @copyright   Copyright (c) 2014-2024 Softwareentwicklung Andreas Knollmann
  * @license     http://www.opensource.org/licenses/mit-license.php MIT
  */
-class Converter
-    implements ConverterInterface
+class Converter implements ConverterInterface
 {
     /**
-     * Convert config
-     *
      * @param DOMDocument $source
-     *
-     * @return array
      */
     public function convert($source): array
     {
@@ -32,7 +27,10 @@ class Converter
             if ($childNode->nodeName === 'config') {
                 /** @var DOMNode $childChildNode */
                 foreach ($childNode->childNodes as $childChildNode) {
-                    $this->addAction($result, $childChildNode);
+                    $this->addAction(
+                        $result,
+                        $childChildNode
+                    );
                 }
             }
         }
@@ -40,10 +38,6 @@ class Converter
         return $result;
     }
 
-    /**
-     * @param array   $result
-     * @param DOMNode $childChildNode
-     */
     private function addAction(array &$result, DOMNode $childChildNode)
     {
         if ($childChildNode->nodeName === 'catalog_product_filter_url') {
@@ -58,10 +52,10 @@ class Converter
                         $idNode = $attributes->getNamedItem('id');
 
                         if ($idNode) {
-                            $id = (string) $idNode->nodeValue;
+                            $id = (string)$idNode->nodeValue;
                         }
 
-                        $action = (string) $childChildChildNode->nodeValue;
+                        $action = (string)$childChildChildNode->nodeValue;
 
                         if (empty($id)) {
                             $id = $action;
@@ -69,8 +63,8 @@ class Converter
                     }
                 }
 
-                if (!empty($id) && !empty($action)) {
-                    $result['catalog_product_filter_url'][$id] = $action;
+                if (! empty($id) && ! empty($action)) {
+                    $result[ 'catalog_product_filter_url' ][ $id ] = $action;
                 }
             }
         }

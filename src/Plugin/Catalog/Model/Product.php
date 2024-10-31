@@ -43,23 +43,30 @@ class Product
             $query = $this->helper->extractQuery();
 
             if ($query) {
-                $suffix = sprintf('#%s', $query);
+                $suffix = sprintf(
+                    '#%s',
+                    $query
+                );
             }
         }
 
         // add fragment part (is ignored if there is already one fragment before the newly added one)
-        return sprintf('%s%s', $result, $suffix);
+        return sprintf(
+            '%s%s',
+            $result,
+            $suffix
+        );
     }
 
-    /**
-     * @return bool
-     */
     private function isValidAction(): bool
     {
         $fullActionName = $this->request->getFullActionName();
 
         $config = $this->config->get('catalog_product_filter_url');
 
-        return is_array($config) && in_array($fullActionName, $config);
+        return is_array($config) && in_array(
+                $fullActionName,
+                $config
+            );
     }
 }

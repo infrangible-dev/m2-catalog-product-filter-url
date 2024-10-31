@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Infrangible\CatalogProductFilterUrl\Helper;
 
+use FeWeDev\Base\Variables;
 use Infrangible\Core\Helper\Attribute;
 use Magento\Catalog\Api\Data\EavAttributeInterface;
 use Magento\Catalog\Model\Product;
@@ -22,22 +23,19 @@ class Data
     /** @var Http */
     protected $request;
 
+    /** @var Variables */
+    protected $variables;
+
     /** @var string|null */
     private $query = null;
 
-    /**
-     * @param Attribute $attributeHelper
-     * @param Http $request
-     */
-    public function __construct(Attribute $attributeHelper, Http $request)
+    public function __construct(Attribute $attributeHelper, Http $request, Variables $variables)
     {
         $this->attributeHelper = $attributeHelper;
         $this->request = $request;
+        $this->variables = $variables;
     }
 
-    /**
-     * @return string
-     */
     public function extractQuery(): string
     {
         if ($this->query === null) {
@@ -45,32 +43,47 @@ class Data
             $params = $this->request->getParams();
 
             foreach ($params as $code => $value) {
-                if ($this->isProductAttribute($code)) {
-                    if (!is_array($value)) {
+                if ($this->isProductAttribute($this->variables->stringValue($code))) {
+                    try {
+                        $attribute = $this->attributeHelper->getAttribute(
+                            Product::ENTITY,
+                            $this->variables->stringValue($code)
+                        );
+
+                        $code = $attribute->getAttributeCode();
+                    } catch (\Exception $exception) {
+                    }
+
+                    if (! is_array($value)) {
                         $value = [$value];
                     }
 
                     foreach ($value as $valueValue) {
-                        $pairs[] = sprintf('%s=%s', $code, $valueValue);
+                        $pairs[] = sprintf(
+                            '%s=%s',
+                            $code,
+                            $valueValue
+                        );
                     }
                 }
             }
 
-            $this->query = implode('&', $pairs);
+            $this->query = implode(
+                '&',
+                $pairs
+            );
         }
 
         return $this->query;
     }
 
-    /**
-     * @param string $code
-     *
-     * @return bool
-     */
     public function isProductAttribute(string $code): bool
     {
         try {
-            $attribute = $this->attributeHelper->getAttribute(Product::ENTITY, $code);
+            $attribute = $this->attributeHelper->getAttribute(
+                Product::ENTITY,
+                $code
+            );
 
             if ($attribute instanceof EavAttributeInterface &&
                 ($attribute->getIsFilterable() == 1 || $attribute->getIsFilterable() == 2)) {
