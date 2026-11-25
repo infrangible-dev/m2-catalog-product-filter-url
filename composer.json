@@ -1,11 +1,20 @@
 {
     "name": "infrangible/m2-catalog-product-filter-url",
-    "description": "Infrangible Magento 2 Catalog Product Filter Url",
+    "description": "Carries the selected layered navigation filters into product links, so a shopper who filtered by color or size lands on the product page with that variant preselected.",
     "type": "magento2-module",
     "version": "1.0.3",
     "license": "MIT",
     "keywords": [
-        "Magento"
+        "Magento",
+        "Magento 2",
+        "Adobe Commerce",
+        "Layered navigation",
+        "Product options",
+        "Catalog",
+        "Hyvä",
+        "preselect variant from layered navigation filter",
+        "carry filters to the product page",
+        "filtered color preselected"
     ],
     "homepage": "https://github.com/infrangible-dev/m2-catalog-product-filter-url",
     "authors": [
