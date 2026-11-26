@@ -2,71 +2,68 @@
 
 declare(strict_types=1);
 
+/**
+ * @author      Philipp Adler
+ * @copyright   Copyright (c) 2014-2026 Softwareentwicklung Andreas Knollmann
+ * @license     http://www.opensource.org/licenses/mit-license.php MIT
+ */
+
 namespace Infrangible\CatalogProductFilterUrl\Plugin\Catalog\Model;
 
+use Infrangible\CatalogProductFilterUrl\Helper\Data as Helper;
 use Infrangible\CatalogProductFilterUrl\Model\Config\Data;
+use Magento\Catalog\Model\Product as CatalogProduct;
 use Magento\Framework\App\Request\Http;
 
 /**
- * @author      Philipp Adler
- * @copyright   Copyright (c) 2014-2024 Softwareentwicklung Andreas Knollmann
- * @license     http://www.opensource.org/licenses/mit-license.php MIT
+ * Adds the applied filters of the layered navigation as URL fragment to the links of products in the product lists of
+ * the actions in catalog_product_filter_url.xml (category and search result pages).
  */
 class Product
 {
-    /** @var \Infrangible\CatalogProductFilterUrl\Helper\Data */
-    protected $helper;
-
-    /** @var Data */
-    protected $config;
-
-    /** @var Http */
-    protected $request;
-
-    public function __construct(\Infrangible\CatalogProductFilterUrl\Helper\Data $helper, Data $config, Http $request)
-    {
-        $this->helper = $helper;
-        $this->config = $config;
-        $this->request = $request;
+    /**
+     * @param Helper $helper
+     * @param Data $config
+     * @param Http $request
+     */
+    public function __construct(
+        protected Helper $helper,
+        protected Data $config,
+        protected Http $request
+    ) {
     }
 
     /**
-     * @noinspection PhpUnused
+     * Adds the applied filters to the URL of the product.
+     *
      * @noinspection PhpUnusedParameterInspection
+     *
+     * @param CatalogProduct $subject
+     * @param string $result
+     *
+     * @return string
      */
-    public function afterGetProductUrl(\Magento\Catalog\Model\Product $subject, string $result): string
+    public function afterGetProductUrl(CatalogProduct $subject, string $result): string
     {
-        // cannot add fragment as parameter since url-encoding is applied
-        $suffix = '';
-
-        if ($this->isValidAction()) {
-            $query = $this->helper->extractQuery();
-
-            if ($query) {
-                $suffix = sprintf(
-                    '#%s',
-                    $query
-                );
-            }
+        if (! $this->isValidAction()) {
+            return $result;
         }
 
-        // add fragment part (is ignored if there is already one fragment before the newly added one)
-        return sprintf(
-            '%s%s',
-            $result,
-            $suffix
-        );
+        $query = $this->helper->extractQuery();
+
+        // as fragment, a parameter would be URL-encoded; a browser ignores it if the URL has a fragment already
+        return $query === '' ? $result : sprintf('%s#%s', $result, $query);
     }
 
+    /**
+     * Checks whether the current action shows product lists with filters.
+     *
+     * @return bool
+     */
     private function isValidAction(): bool
     {
-        $fullActionName = $this->request->getFullActionName();
+        $actions = $this->config->get('catalog_product_filter_url');
 
-        $config = $this->config->get('catalog_product_filter_url');
-
-        return is_array($config) && in_array(
-                $fullActionName,
-                $config
-            );
+        return is_array($actions) && in_array($this->request->getFullActionName(), $actions, true);
     }
 }
